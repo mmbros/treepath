@@ -1,26 +1,26 @@
 package treepath
 
-// Fifo is a basic FIFO queue based on a circular list that resizes as needed.
+// fifo is a basic FIFO queue based on a circular list that resizes as needed.
 // https://play.golang.org/p/m15vAaFQ9r
-type Fifo struct {
-	nodes []interface{}
+type fifo struct {
+	//nodes []interface{}
+	nodes []*node
 	head  int
 	tail  int
 	count int
 }
 
-func NewFifo(size int) *Fifo {
-	if size <= 0 {
-		size = 1
-	}
-	q := &Fifo{nodes: make([]interface{}, size)}
+func newFifo() *fifo {
+	size := 2
+	//q := &fifo{nodes: make([]interface{}, size)}
+	q := &fifo{nodes: make([]*node, size)}
 	return q
 }
 
 // Push adds a node to the queue.
-func (q *Fifo) Push(n interface{}) {
+func (q *fifo) Push(n *node) {
 	if q.head == q.tail && q.count > 0 {
-		nodes := make([]interface{}, len(q.nodes)*2)
+		nodes := make([]*node, len(q.nodes)*2)
 		copy(nodes, q.nodes[q.head:])
 		copy(nodes[len(q.nodes)-q.head:], q.nodes[:q.head])
 		q.head = 0
@@ -33,7 +33,7 @@ func (q *Fifo) Push(n interface{}) {
 }
 
 // Pop removes and returns a node from the queue in first to last order.
-func (q *Fifo) Pop() interface{} {
+func (q *fifo) Pop() *node {
 	if q.count == 0 {
 		return nil
 	}
@@ -43,6 +43,6 @@ func (q *Fifo) Pop() interface{} {
 	return node
 }
 
-func (q *Fifo) Len() int {
+func (q *fifo) Len() int {
 	return q.count
 }

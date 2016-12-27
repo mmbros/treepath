@@ -81,7 +81,7 @@ type filter interface {
 // a Path object.  It collects and deduplicates all elements matching
 // the path query.
 type pather struct {
-	queue      *Fifo
+	queue      *fifo
 	results    []Element
 	inResults  map[Element]bool
 	candidates []Element
@@ -244,7 +244,7 @@ func (seg *segment) apply(e Element, p *pather) {
 
 func newPather() *pather {
 	return &pather{
-		queue:      NewFifo(0),
+		queue:      newFifo(),
 		results:    make([]Element, 0),
 		inResults:  make(map[Element]bool),
 		candidates: make([]Element, 0),
@@ -256,15 +256,15 @@ func newPather() *pather {
 // and then returning all elements that match the path's selectors
 // and filters.
 func (p *pather) traverse(e Element, path Path) []Element {
-	for p.queue.Push(node{e, path.segments}); p.queue.Len() > 0; {
-		p.eval(p.queue.Pop().(node))
+	for p.queue.Push(&node{e, path.segments}); p.queue.Len() > 0; {
+		p.eval(p.queue.Pop())
 	}
 	return p.results
 }
 
 // eval evalutes the current path node by applying the remaining
 // path's selector rules against the node's element.
-func (p *pather) eval(n node) {
+func (p *pather) eval(n *node) {
 	p.candidates = p.candidates[0:0]
 	seg, remain := n.segments[0], n.segments[1:]
 	seg.apply(n.e, p)
@@ -278,7 +278,7 @@ func (p *pather) eval(n node) {
 		}
 	} else {
 		for _, c := range p.candidates {
-			p.queue.Push(node{c, remain})
+			p.queue.Push(&node{c, remain})
 		}
 	}
 }

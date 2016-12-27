@@ -2,13 +2,22 @@ package treepath
 
 import "testing"
 
-type myNode int
+type myElement struct {
+	number int
+}
+
+func (e *myElement) Parent() Element                      { return nil }
+func (e *myElement) Children() []Element                  { return nil }
+func (e *myElement) MatchTag(tag string) bool             { return false }
+func (e *myElement) MatchTagText(tag, text string) bool   { return false }
+func (e *myElement) MatchAttr(attr string) bool           { return false }
+func (e *myElement) MatchAttrText(attr, text string) bool { return false }
 
 func TestFifo(t *testing.T) {
 	const L = 20
 
 	// init fifo queue with 0 size
-	q := NewFifo(0)
+	q := newFifo()
 	if q.Len() != 0 {
 		t.Errorf("Len: expected %d, found %d", 0, q.Len())
 	}
@@ -20,7 +29,8 @@ func TestFifo(t *testing.T) {
 	}
 	// push L elements
 	for j := 1; j <= L; j++ {
-		q.Push(myNode(j))
+
+		q.Push(&node{&myElement{j}, nil})
 		if q.Len() != j {
 			t.Errorf("Len: expected %d, found %d", j, q.Len())
 		}
@@ -29,8 +39,8 @@ func TestFifo(t *testing.T) {
 	// pop L elements and test order
 	j := 1
 	for q.Len() > 0 {
-		mynode := q.Pop().(myNode)
-		n := int(mynode)
+		mynode := q.Pop()
+		n := mynode.e.(*myElement).number
 		if j != n {
 			t.Errorf("Pop: expected %d, found %d", j, n)
 
@@ -40,5 +50,4 @@ func TestFifo(t *testing.T) {
 			t.Errorf("Pop: too many iterations")
 		}
 	}
-
 }
